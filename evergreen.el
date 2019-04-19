@@ -41,6 +41,12 @@ Defaults to the result of `evergreen list --projects`."
   :group 'evergreen)
 
 
+(defcustom evergreen-binary-path "evergreen"
+  "Location of evergreen binary, assumes evergreen is in your $PATH."
+  :type 'string
+  :group 'evergreen)
+
+
 (defun evergreen-command (command &rest args)
   "Run the evergreen command COMMAND with ARGS."
   (let ((real-args (remove nil (append '(command) args))))
