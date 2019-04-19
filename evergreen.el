@@ -140,6 +140,13 @@ Accepted keys are:
     (format "evergreen list --project %s --%s" project what))
    "\n"))
 
+(defun evergreen--trim-extra-output (s)
+  "Return the first word from the string S.
+
+Evergreen sometimes returns a lot of extra information that makes it
+not suitable for use in later commands."
+  (car (split-string s)))
+
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
