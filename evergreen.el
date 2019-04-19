@@ -149,6 +149,12 @@ Evergreen sometimes returns a lot of extra information that makes it
 not suitable for use in later commands."
   (car (split-string s)))
 
+(defun evergreen--list-trimmed (project what)
+  "Generate a trimmed list of WHAT for PROJECT."
+  (mapcar
+   'evergreen--trim-extra-output
+   (evergreen-list-for-project project what)))
+
 (defun evergreen-patch--get-user-args ()
   "Builds args for evergreen-patch using user input."
   (let* (
@@ -172,21 +178,15 @@ not suitable for use in later commands."
          (alias (when use-alias
                   (completing-read
                    "Alias: "
-                   (mapcar
-                    evergreen--trim-extra-output
-                    (evergreen-list-for-project project "aliases")))))
+                   (evergreen--list-trimmed project "aliases"))))
          (variants (when (not use-alias)
                      (completing-read-multiple
                       "Variants (comma-separated press tab to see completions): "
-                      (mapcar
-                       'evergreen--trim-extra-output
-                       (evergreen-list-for-project project "variants")))))
+                      (evergreen--list-trimmed project "variants"))))
          (tasks (when (not use-alias)
                      (completing-read-multiple
                       "Tasks (comma-separated press tab to see completions): "
-                      (mapcar
-                       'evergreen--trim-extra-output
-                       (evergreen-list-for-project project "tasks")))))
+                      (evergreen--list-trimmed project "tasks"))))
          )
     (list project finalize browse alias variants tasks)))
 
