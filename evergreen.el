@@ -22,7 +22,9 @@
 
 ;;; Commentary:
 
-;; 
+;; This is mostly a nice wrapper / porcelain for the Evergreen CLI
+;; tool.  As such, you need to install the Evergreen CLI tool to use
+;; this package.
 
 ;;; Code:
 
