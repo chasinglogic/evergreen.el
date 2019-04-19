@@ -40,6 +40,10 @@ Defaults to the result of `evergreen list --projects`."
   :type 'list
   :group 'evergreen)
 
+(defcustom evergreen-command-output-buffer "*evergreen command output*"
+  "Buffer to output evergreen stdout to."
+  :type 'string
+  :group 'evergreen)
 
 (defcustom evergreen-binary-path "evergreen"
   "Location of evergreen binary, assumes evergreen is in your $PATH."
