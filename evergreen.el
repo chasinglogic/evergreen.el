@@ -187,6 +187,30 @@ not suitable for use in later commands."
                        (evergreen-list-for-project project "tasks")))))
          )
     (list project finalize browse alias variants tasks)))
+
+(defun evergreen-patch (project &optional finalize browse alias variants tasks)
+  "Run an evergreen patch for PROJECT.
+
+If FINALIZE will schedule patch without human interaction
+If BROWSE open the patch in a web browser after submitting
+If ALIAS is provided that will be used to select VARIANTS and
+TASKS.
+If ALIAS is nil VARIANTS and TASKS must be provided instead."
+  (interactive (evergreen-patch--get-user-args))
+  ;; this if condition is likely wrong
+  (when (and (not alias)
+             (or (not tasks)
+                 (not variants)))
+    (error "Either ALIAS or both TASKS and VARIANTS must be provided"))
+  (evergreen-command
+   "patch"
+   (evergreen-patch-flagset
+    :project project
+    :alias alias
+    :variants variants
+    :tasks tasks
+    :finalize finalize
+    :browse browse)))
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
