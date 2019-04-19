@@ -40,6 +40,42 @@ Defaults to the result of `evergreen list --projects`."
   :type 'list
   :group 'evergreen)
 
+
+(defun evergreen-patch-flagset (&rest kwargs)
+  "Build an evergreen patch flagset using the property list KWARGS.
+
+Accepted keys are:
+:project   Project to run patch against
+:alias	   Patch alias (set by project admin)
+:variants  Variants to run on
+:tasks     List of tasks to run
+:description	description for the patch
+:no-confirm				skip confirmation text
+:large	   Enable submitting larger patches (>16MB)
+:browse				open patch url in browser
+:verbose				show patch summary
+:finalize			schedule tasks immediately
+:committed-only			diff with HEAD, ignoring working tree changes"
+  (remove
+   nil
+   (list
+    (format "--project=%s" (plist-get kwargs :project))
+    (if (plist-get kwargs :alias)
+        (format "--alias=%s" (plist-get kwargs :alias))
+      (format "--variants=%s"
+              (mapconcat 'identity
+                         (plist-get kwargs :variants) ","))
+      (format "--tasks=%s"
+              (mapconcat 'identity
+                         (plist-get kwargs :tasks) ",")))
+    (when (plist-get kwargs :description)
+      (format "--description=%s" (plist-get kwargs :description)))
+    (when (plist-get kwargs :no-confirm) "--yes")
+    (when (plist-get kwargs :large) "--large")
+    (when (plist-get kwargs :browse) "--browse")
+    (when (plist-get kwargs :verbose) "--verbose")
+    (when (plist-get kwargs :finalize) "--finalize")
+    (when (plist-get kwargs :committed-only) "--committed-only"))))
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
