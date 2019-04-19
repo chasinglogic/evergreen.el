@@ -26,6 +26,9 @@
 
 ;;; Code:
 
+(defgroup evergreen nil
+  "Evergreen interaction from inside Emacs."
+  :group 'external)
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
