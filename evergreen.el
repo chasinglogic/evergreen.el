@@ -29,6 +29,17 @@
 (defgroup evergreen nil
   "Evergreen interaction from inside Emacs."
   :group 'external)
+
+(defcustom evergreen-projects
+  (split-string
+   (shell-command-to-string "evergreen list --projects")
+   "\n")
+  "List of evergreen projects used for completion in evergreen.el commands.
+
+Defaults to the result of `evergreen list --projects`."
+  :type 'list
+  :group 'evergreen)
+
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
