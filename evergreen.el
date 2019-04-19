@@ -76,6 +76,14 @@ Accepted keys are:
     (when (plist-get kwargs :verbose) "--verbose")
     (when (plist-get kwargs :finalize) "--finalize")
     (when (plist-get kwargs :committed-only) "--committed-only"))))
+
+(defun evergreen-list-for-project (project what)
+  "Return a list of WHAT for PROJECT."
+  (split-string
+   (shell-command-to-string
+    (format "evergreen list --project %s --%s" project what))
+   "\n"))
+
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
