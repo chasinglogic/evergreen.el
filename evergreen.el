@@ -40,6 +40,11 @@ Defaults to the result of `evergreen list --projects`."
   :type 'list
   :group 'evergreen)
 
+(defcustom evergreen-default-project nil
+  "When prompting for project completion select the item matching this first."
+  :type 'string
+  :group 'evergreen)
+
 (defcustom evergreen-command-output-buffer "*evergreen command output*"
   "Buffer to output evergreen stdout to."
   :type 'string
@@ -50,6 +55,34 @@ Defaults to the result of `evergreen list --projects`."
   :type 'string
   :group 'evergreen)
 
+(defcustom evergreen-browse-when-patching nil
+  "Whether or not to open a patch in your browser after creation."
+  :type 'boolean
+  :group 'evergreen)
+
+(defcustom evergreen-finalize-when-patching nil
+  "If not nil schedule every patch right away."
+  :type 'boolean
+  :group 'evergreen)
+
+(defcustom evergreen-never-finalize-when-patching nil
+  "If not nil never finalize and do not prompt for finalize when patching.
+
+This option is ignored if evergreen-finalize-when-patching is non-nil."
+  :type 'boolean
+  :group 'evergreen)
+
+(defcustom evergreen-browse-when-patching nil
+  "If not nil always open new patches in your web browser after submitting."
+  :type 'boolean
+  :group 'evergreen)
+
+(defcustom evergreen-never-browse-when-patching nil
+  "If not nil never browse and do not prompt for browse when patching.
+
+This option is ignored if evergreen-browse-when-patching is non-nil."
+  :type 'boolean
+  :group 'evergreen)
 
 (defun evergreen-command (command &rest args)
   "Run the evergreen command COMMAND with ARGS."
