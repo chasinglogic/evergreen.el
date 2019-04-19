@@ -147,6 +147,46 @@ Evergreen sometimes returns a lot of extra information that makes it
 not suitable for use in later commands."
   (car (split-string s)))
 
+(defun evergreen-patch--get-user-args ()
+  "Builds args for evergreen-patch using user input."
+  (let* (
+         (project (evergreen--trim-extra-output
+                   (completing-read
+                    "Evergreen Project: "
+                    evergreen-projects
+                    nil t nil nil
+                    evergreen-default-project)))
+         (finalize (if evergreen-finalize-when-patching
+                       t
+                     (if evergreen-never-finalize-when-patching
+                         nil
+                       (y-or-n-p "Finalize this patch (schedule right away)? "))))
+         (browse (if evergreen-browse-when-patching
+                       t
+                     (if evergreen-never-browse-when-patching
+                         nil
+                       (y-or-n-p "Open patch in your web browser? "))))
+         (use-alias (y-or-n-p "Use an alias? "))
+         (alias (when use-alias
+                  (completing-read
+                   "Alias: "
+                   (mapcar
+                    evergreen--trim-extra-output
+                    (evergreen-list-for-project project "aliases")))))
+         (variants (when (not use-alias)
+                     (completing-read-multiple
+                      "Variants (comma-separated press tab to see completions): "
+                      (mapcar
+                       'evergreen--trim-extra-output
+                       (evergreen-list-for-project project "variants")))))
+         (tasks (when (not use-alias)
+                     (completing-read-multiple
+                      "Tasks (comma-separated press tab to see completions): "
+                      (mapcar
+                       'evergreen--trim-extra-output
+                       (evergreen-list-for-project project "tasks")))))
+         )
+    (list project finalize browse alias variants tasks)))
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
