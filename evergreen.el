@@ -41,6 +41,19 @@ Defaults to the result of `evergreen list --projects`."
   :group 'evergreen)
 
 
+(defun evergreen-command (command &rest args)
+  "Run the evergreen command COMMAND with ARGS."
+  (let ((real-args (remove nil (append '(command) args))))
+    (pop-to-buffer
+     (apply 'make-comint-in-buffer
+            "evergreen" evergreen-command-output-buffer
+            evergreen-binary-path
+            nil
+            real-args)
+     (message "Running upload.py with: %s" (append '(evergreen-binary-path) real-args))
+     (with-current-buffer evergreen-command-output-buffer
+       (goto-char (point-max))))))
+
 (defun evergreen-patch-flagset (&rest kwargs)
   "Build an evergreen patch flagset using the property list KWARGS.
 
