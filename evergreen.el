@@ -33,10 +33,15 @@
   "Evergreen interaction from inside Emacs."
   :group 'external)
 
+(defun evergreen-list-projects ()
+  "Return a list of available evergreen projects."
+  (cdr ;; removes the project count
+   (split-string
+    (evergreen--command-to-string "evergreen list --projects")
+    "\n")))
+
 (defcustom evergreen-projects
-  (split-string
-   (shell-command-to-string "evergreen list --projects")
-   "\n")
+  (evergreen-list-projects)
   "List of evergreen projects used for completion in evergreen.el commands.
 
 Defaults to the result of `evergreen list --projects`."
