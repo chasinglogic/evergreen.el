@@ -224,7 +224,15 @@ not suitable for use in later commands."
                     "Evergreen Project: "
                     evergreen-projects
                     nil t nil nil
-                    evergreen-default-project)))
+                    (cond
+                     ;; If evergreen-default-project is set use that
+                     (evergreen-default-project evergreen-default-project)
+                     ;; If projectile is available try that
+                     ((and (boundp 'projectile-project-name)
+                           (projectile-project-name))
+                      (projectile-project-name))
+                     ;; Default to nil
+                     (t nil)))))
          (finalize (if evergreen-finalize-when-patching
                        t
                      (if evergreen-never-finalize-when-patching
