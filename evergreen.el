@@ -63,6 +63,11 @@ Defaults to the result of `evergreen list --projects`."
   :type 'string
   :group 'evergreen)
 
+(defcustom evergreen-assume-yes nil
+  "If not nil the Evergreen CLI will assume yes to all prompts."
+  :type 'boolean
+  :group 'evergreen)
+
 (defcustom evergreen-browse-when-patching nil
   "Whether or not to open a patch in your browser after creation."
   :type 'boolean
@@ -213,15 +218,19 @@ If ALIAS is nil VARIANTS and TASKS must be provided instead."
              (or (not tasks)
                  (not variants)))
     (error "Either ALIAS or both TASKS and VARIANTS must be provided"))
-  (evergreen-command
-   "patch"
-   (evergreen-patch-flagset
-    :project project
-    :alias alias
-    :variants variants
-    :tasks tasks
-    :finalize finalize
-    :browse browse)))
+  (apply 'evergreen-command
+         (append
+          (list "patch")
+          (evergreen-patch-flagset
+           :project project
+           :alias alias
+           :variants variants
+           :tasks tasks
+           :no-confirm evergreen-assume-yes
+           :finalize finalize
+           :large large
+           :browse browse))))
+
 
 (provide 'evergreen)
 
