@@ -164,9 +164,22 @@ Accepted keys are:
 (defun evergreen-list-for-project (project what)
   "Return a list of WHAT for PROJECT."
   (split-string
-   (shell-command-to-string
+   (evergreen--command-to-string
     (format "evergreen list --project %s --%s" project what))
    "\n"))
+
+
+(defun evergreen--command-to-string (command)
+  "Run COMMAND removing evergreen's self update message if necessary."
+  (let ((output (shell-command-to-string command)))
+    (if (string-match-p (regexp-quote "^A new version is available.*") output)
+        (progn
+          (message "Evergreen CLI is ready for update. Run evergreen-update-cli to update it.")
+          (mapconcat
+           'identity
+           (cdr (split-string output "\n"))
+           "\n"))
+      output)))
 
 (defun evergreen--trim-extra-output (s)
   "Return the first word from the string S.
