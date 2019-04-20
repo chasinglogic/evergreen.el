@@ -27,7 +27,18 @@
    (quelpa '(evergreen :repo "chasinglogic/evergreen.el" :fetcher github))
    #+END_SRC
    
-*** TODO document manual install
+   Alternatively you can install directly using git. First clone this
+   repository to your local machine (update the path as necessary):
+
+   #+BEGIN_SRC bash
+   $ git clone https://github.com/chasinglogic/evergreen.el ~/.evergreen.el
+   #+END_SRC
+   
+   Now add the following line to your Emacs init file:
+
+   #+BEGIN_SRC emacs-lisp
+   (load-file "~/.evergreen.el/evergreen.el")
+   #+END_SRC
    
 ** Usage
 
