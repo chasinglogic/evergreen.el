@@ -232,6 +232,13 @@ If ALIAS is nil VARIANTS and TASKS must be provided instead."
            :large large
            :browse browse))))
 
+(defun evergreen-large-patch ()
+  "Run evergreen patch with the large flag."
+  (interactive)
+  (apply 'evergreen-patch
+         (append
+          (evergreen-patch--get-user-args)
+          (list t))))
 
 (provide 'evergreen)
 
