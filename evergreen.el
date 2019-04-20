@@ -121,11 +121,9 @@ Accepted keys are:
     (if (plist-get kwargs :alias)
         (format "--alias=%s" (plist-get kwargs :alias))
       (format "--variants=%s"
-              (mapconcat 'identity
-                         (plist-get kwargs :variants) ","))
+              (mapconcat 'identity (plist-get kwargs :variants) ","))
       (format "--tasks=%s"
-              (mapconcat 'identity
-                         (plist-get kwargs :tasks) ",")))
+              (mapconcat 'identity (plist-get kwargs :tasks) ",")))
     (when (plist-get kwargs :description)
       (format "--description=%s" (plist-get kwargs :description)))
     (when (plist-get kwargs :no-confirm) "--yes")
