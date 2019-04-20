@@ -168,6 +168,12 @@ Accepted keys are:
     (format "evergreen list --project %s --%s" project what))
    "\n"))
 
+(defun evergreen-update-cli ()
+  "Update the Evergreen CLI via it's self update mechanism."
+  (if (or (eq system-type 'windows-nt)
+          (eq system-type 'ms-dos))
+      (evergreen-command "get-update")
+  (evergreen-command "get-update" "--install")))
 
 (defun evergreen--command-to-string (command)
   "Run COMMAND removing evergreen's self update message if necessary."
