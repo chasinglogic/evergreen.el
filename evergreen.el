@@ -205,11 +205,12 @@ not suitable for use in later commands."
          )
     (list project finalize browse alias variants tasks)))
 
-(defun evergreen-patch (project &optional finalize browse alias variants tasks)
+(defun evergreen-patch (project &optional finalize browse alias variants tasks description large)
   "Run an evergreen patch for PROJECT.
 
-If FINALIZE will schedule patch without human interaction
-If BROWSE open the patch in a web browser after submitting
+If DESCRIPTION is a string will set patch description to that value
+If FINALIZE is non-nil will schedule patch without human interaction
+If BROWSE is non-nil open the patch in a web browser after submitting
 If ALIAS is provided that will be used to select VARIANTS and
 TASKS.
 If ALIAS is nil VARIANTS and TASKS must be provided instead."
