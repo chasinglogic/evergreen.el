@@ -1,4 +1,5 @@
 ;;; evergreen.el --- Interact with Evergreen via Emacs
+;;; Version: 0.1.0
 
 ;; Copyright (C) 2019 Mathew Robinson
 
