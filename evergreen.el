@@ -104,16 +104,20 @@ This option is ignored if evergreen-browse-when-patching is non-nil."
 
 (defun evergreen-command (command &rest args)
   "Run the evergreen command COMMAND with ARGS."
-  (let ((real-args (remove nil (append '(command) args))))
+  (let ((real-args (remove nil (append (list command) args))))
     (pop-to-buffer
      (apply 'make-comint-in-buffer
-            "evergreen" evergreen-command-output-buffer
-            evergreen-binary-path
-            nil
-            real-args)
-     (message "Running upload.py with: %s" (append '(evergreen-binary-path) real-args))
+            (append
+             (list
+              (format "evergreen %s" command)
+              evergreen-command-output-buffer
+              evergreen-binary-path
+              nil)
+              real-args)))
+    (message "Running evergreen with: %s"
+             (append (list evergreen-binary-path) real-args))
      (with-current-buffer evergreen-command-output-buffer
-       (goto-char (point-max))))))
+       (goto-char (point-max)))))
 
 (defun evergreen-patch-flagset (&rest kwargs)
   "Build an evergreen patch flagset using the property list KWARGS.
