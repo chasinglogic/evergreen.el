@@ -197,7 +197,6 @@ If ALIAS is provided that will be used to select VARIANTS and
 TASKS.
 If ALIAS is nil VARIANTS and TASKS must be provided instead."
   (interactive (evergreen-patch--get-user-args))
-  ;; this if condition is likely wrong
   (when (and (not alias)
              (or (not tasks)
                  (not variants)))
@@ -211,6 +210,7 @@ If ALIAS is nil VARIANTS and TASKS must be provided instead."
     :tasks tasks
     :finalize finalize
     :browse browse)))
+
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
