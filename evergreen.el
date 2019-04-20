@@ -97,6 +97,11 @@ This option is ignored if evergreen-browse-when-patching is non-nil."
   :type 'boolean
   :group 'evergreen)
 
+(defcustom evergreen-generate-description nil
+  "If not nil generates patch descriptions of form $git_branch_name: $git_head_commit_msg."
+  :type 'boolean
+  :group 'evergreen)
+
 (defun evergreen-command (command &rest args)
   "Run the evergreen command COMMAND with ARGS."
   (let ((real-args (remove nil (append '(command) args))))
@@ -170,6 +175,22 @@ not suitable for use in later commands."
    'evergreen--trim-extra-output
    (evergreen-list-for-project project what)))
 
+(defun evergreen--branch-name ()
+  "Return the git branch name for buffer."
+  (string-trim-right
+   (replace-regexp-in-string
+    (regexp-quote "refs/heads/")
+    ""
+    (shell-command-to-string "git symbolic-ref HEAD"))))
+
+(defun evergreen--generate-description ()
+  "Generate patch description using git information."
+  (let* (
+         (branch-name (evergreen--branch-name))
+         (commit-msg (string-trim-right
+                      (shell-command-to-string "git log -n 1 --format='%s'"))))
+    (concat branch-name ": " commit-msg)))
+
 (defun evergreen-patch--get-user-args ()
   "Builds args for evergreen-patch using user input."
   (let* (
@@ -202,6 +223,9 @@ not suitable for use in later commands."
                      (completing-read-multiple
                       "Tasks (comma-separated press tab to see completions): "
                       (evergreen--list-trimmed project "tasks"))))
+         (description (if evergreen-generate-description
+                          (evergreen--generate-description)
+                        (read-string "Description: ")))
          )
     (list project finalize browse alias variants tasks)))
 
