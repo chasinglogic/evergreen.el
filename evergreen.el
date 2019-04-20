@@ -31,6 +31,18 @@
 
 (require 'subr-x)
 
+(defun evergreen--command-to-string (command)
+  "Run COMMAND removing evergreen's self update message if necessary."
+  (let ((output (shell-command-to-string command)))
+    (if (string-match-p (regexp-quote "^A new version is available.*") output)
+        (progn
+          (message "Evergreen CLI is ready for update. Run evergreen-update-cli to update it.")
+          (mapconcat
+           'identity
+           (cdr (split-string output "\n"))
+           "\n"))
+      output)))
+
 (defun evergreen-list-projects ()
   "Return a list of available evergreen projects."
   (cdr ;; removes the project count
@@ -175,18 +187,6 @@ Accepted keys are:
           (eq system-type 'ms-dos))
       (evergreen-command "get-update")
   (evergreen-command "get-update" "--install")))
-
-(defun evergreen--command-to-string (command)
-  "Run COMMAND removing evergreen's self update message if necessary."
-  (let ((output (shell-command-to-string command)))
-    (if (string-match-p (regexp-quote "^A new version is available.*") output)
-        (progn
-          (message "Evergreen CLI is ready for update. Run evergreen-update-cli to update it.")
-          (mapconcat
-           'identity
-           (cdr (split-string output "\n"))
-           "\n"))
-      output)))
 
 (defun evergreen--trim-extra-output (s)
   "Return the first word from the string S.
