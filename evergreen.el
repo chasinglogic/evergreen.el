@@ -31,7 +31,6 @@
 
 (require 'subr-x)
 
-;;;###autoload
 (defun evergreen-list-projects ()
   "Return a list of available evergreen projects."
   (cdr ;; removes the project count
@@ -39,12 +38,10 @@
     (evergreen--command-to-string "evergreen list --projects")
     "\n")))
 
-;;;###autoload
 (defgroup evergreen nil
   "Evergreen interaction from inside Emacs."
   :group 'external)
 
-;;;###autoload
 (defcustom evergreen-projects
   (evergreen-list-projects)
   "List of evergreen projects used for completion in evergreen.el commands.
@@ -58,37 +55,31 @@ Defaults to the result of `evergreen list --projects`."
   :type 'string
   :group 'evergreen)
 
-;;;###autoload
 (defcustom evergreen-command-output-buffer "*evergreen command output*"
   "Buffer to output evergreen stdout to."
   :type 'string
   :group 'evergreen)
 
-;;;###autoload
 (defcustom evergreen-binary-path "evergreen"
   "Location of evergreen binary, assumes evergreen is in your $PATH."
   :type 'string
   :group 'evergreen)
 
-;;;###autoload
 (defcustom evergreen-assume-yes nil
   "If not nil the Evergreen CLI will assume yes to all prompts."
   :type 'boolean
   :group 'evergreen)
 
-;;;###autoload
 (defcustom evergreen-browse-when-patching nil
   "Whether or not to open a patch in your browser after creation."
   :type 'boolean
   :group 'evergreen)
 
-;;;###autoload
 (defcustom evergreen-finalize-when-patching nil
   "If not nil schedule every patch right away."
   :type 'boolean
   :group 'evergreen)
 
-;;;###autoload
 (defcustom evergreen-never-finalize-when-patching nil
   "If not nil never finalize and do not prompt for finalize when patching.
 
@@ -96,13 +87,11 @@ This option is ignored if evergreen-finalize-when-patching is non-nil."
   :type 'boolean
   :group 'evergreen)
 
-;;;###autoload
 (defcustom evergreen-browse-when-patching nil
   "If not nil always open new patches in your web browser after submitting."
   :type 'boolean
   :group 'evergreen)
 
-;;;###autoload
 (defcustom evergreen-never-browse-when-patching nil
   "If not nil never browse and do not prompt for browse when patching.
 
@@ -110,7 +99,6 @@ This option is ignored if evergreen-browse-when-patching is non-nil."
   :type 'boolean
   :group 'evergreen)
 
-;;;###autoload
 (defcustom evergreen-generate-description nil
   "If not nil generates patch descriptions of form $git_branch_name: $git_head_commit_msg."
   :type 'boolean
@@ -229,8 +217,10 @@ not suitable for use in later commands."
                       (shell-command-to-string "git log -n 1 --format='%s'"))))
     (concat branch-name ": " commit-msg)))
 
+;;;###autoload
 (defun evergreen-patch--get-user-args ()
   "Builds args for evergreen-patch using user input."
+  (require 'evergreen)
   (let* (
          (project (evergreen--trim-extra-output
                    (completing-read
