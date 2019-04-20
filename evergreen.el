@@ -115,6 +115,12 @@ Accepted keys are:
 :verbose				show patch summary
 :finalize			schedule tasks immediately
 :committed-only			diff with HEAD, ignoring working tree changes"
+  (when (and (plist-get kwargs :variants)
+             (not (listp (plist-get kwargs :variants))))
+    (error ":variants must be a list"))
+  (when (and (plist-get kwargs :tasks)
+             (not (listp (plist-get kwargs :tasks))))
+    (error ":tasks must be a list"))
   (remove
    nil
    (list
