@@ -263,7 +263,7 @@ not suitable for use in later commands."
                           (evergreen--generate-description)
                         (read-string "Description: ")))
          )
-    (list project finalize browse alias variants tasks)))
+    (list project finalize browse alias variants tasks description)))
 
 ;;;###autoload
 (defun evergreen-patch (project &optional finalize browse alias variants tasks description large)
@@ -287,6 +287,7 @@ If ALIAS is nil VARIANTS and TASKS must be provided instead."
            :project project
            :alias alias
            :variants variants
+           :description description
            :tasks tasks
            :no-confirm evergreen-assume-yes
            :finalize finalize
