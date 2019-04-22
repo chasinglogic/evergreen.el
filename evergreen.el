@@ -67,6 +67,11 @@ Defaults to the result of `evergreen list --projects`."
   :type 'string
   :group 'evergreen)
 
+(defcustom evergreen-default-alias nil
+  "When prompting for an alias default the completion selection to this value."
+  :type 'string
+  :group 'evergreen)
+
 (defcustom evergreen-command-output-buffer "*evergreen command output*"
   "Buffer to output evergreen stdout to."
   :type 'string
@@ -250,7 +255,8 @@ not suitable for use in later commands."
          (alias (when use-alias
                   (completing-read
                    "Alias: "
-                   (evergreen--list-trimmed project "aliases"))))
+                   (evergreen--list-trimmed project "aliases")
+                   nil t nil t evergreen-default-alias)))
          (variants (when (not use-alias)
                      (completing-read-multiple
                       "Variants (comma-separated press tab to see completions): "

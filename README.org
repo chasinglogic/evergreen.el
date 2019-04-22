@@ -85,6 +85,11 @@
      when switching branches and visiting a file that was open before
      checking out the new branch.
   
+**** evergreen-default-alias
+     
+     When prompting for alias completion select the item matching
+     this first.
+  
 **** evergreen-command-output-buffer
      
      Buffer to output evergreen stdout to. Defaults to ="*evergreen command output*"=.
