@@ -161,22 +161,25 @@ Accepted keys are:
     (error ":tasks must be a list"))
   (remove
    nil
-   (list
-    (format "--project=%s" (plist-get kwargs :project))
+   (apply
+    #'append
+    (list (format "--project=%s" (plist-get kwargs :project)))
     (if (plist-get kwargs :alias)
-        (format "--alias=%s" (plist-get kwargs :alias))
-      (format "--variants=%s"
-              (string-join (plist-get kwargs :variants) ","))
-      (format "--tasks=%s"
-              (string-join (plist-get kwargs :tasks) ",")))
-    (when (plist-get kwargs :description)
-      (format "--description=%s" (plist-get kwargs :description)))
-    (when (plist-get kwargs :no-confirm) "--yes")
-    (when (plist-get kwargs :large) "--large")
-    (when (plist-get kwargs :browse) "--browse")
-    (when (plist-get kwargs :verbose) "--verbose")
-    (when (plist-get kwargs :finalize) "--finalize")
-    (when (plist-get kwargs :committed-only) "--committed-only"))))
+        (list (format "--alias=%s" (plist-get kwargs :alias)))
+      (list
+       (format "--variants=%s"
+               (string-join (plist-get kwargs :variants) ","))
+       (format "--tasks=%s"
+               (string-join (plist-get kwargs :tasks) ","))))
+    (list
+     (when (plist-get kwargs :description)
+       (format "--description=%s" (plist-get kwargs :description)))
+     (when (plist-get kwargs :no-confirm) "--yes")
+     (when (plist-get kwargs :large) "--large")
+     (when (plist-get kwargs :browse) "--browse")
+     (when (plist-get kwargs :verbose) "--verbose")
+     (when (plist-get kwargs :finalize) "--finalize")
+     (when (plist-get kwargs :committed-only) "--committed-only")))))
 
 (defun evergreen-list-for-project (project what)
   "Return a list of WHAT for PROJECT."
