@@ -42,15 +42,67 @@
    
 ** Usage
 
-   For now evergreen.el really only allows you to submit patch builds
-   to Evergreen. This is done via the command =M-x evergreen-patch <RET>=
-   when visiting any file in the repository you wanna patch against.
+*** Managing Spawn Hosts
+    
+    evergreen.el provides an integrated experience with Evergreen
+    Spawn hosts.
+    
+    To list your current spawn hosts you can do so via the command
+    =M-x evergreen-list-spawn-hosts <RET>=. This will open up the
+    Evergreen Spawn Host menu buffer.
+    
+    
+    [[https://raw.githubusercontent.com/evergreen-ci/evergreen.el/master/screenshots/empty_spawn_host_list.png]]
+    
+    You can see that there is a "Spawn Host" button, if you click on
+    or press =<RET>= while the cursor is over this button you will be
+    interactively prompted to create a spawn host. You will receive a
+    fuzzy searchable list of available distros:
+
+    [[https://raw.githubusercontent.com/evergreen-ci/evergreen.el/master/screenshots/spawning_host.png]]
+    
+    Once the host has started spawning you can call =M-x revert-buffer
+    <RET>= inside the Spawn Host menu buffer to update it like any
+    other buffer in Emacs:
+    
+    [[https://raw.githubusercontent.com/evergreen-ci/evergreen.el/master/screenshots/host_provisioning.png]]
+    
+    Note that the Spawn Host id is highlighted as a button. If you
+    press =<RET>= with the cursor on the ID or simply click it Emacs
+    will remote into the spawn host using [[https://www.emacswiki.org/emacs/TrampMode][TRAMP mode]]:
+    
+    
+    [[https://raw.githubusercontent.com/evergreen-ci/evergreen.el/master/screenshots/host_opened_in_emacs.png]]
+    
+    Important! Tramp can hang weirdly if you are connecting to a host
+    for the first time (due to host key checking prompts it doesn't
+    always forward correctly). For a smooth experience with AWS
+    instances, which spawn hosts are, I recommend adding the following
+    to your =~/.ssh/config= file:
+    
+    #+BEGIN_SRC text
+    Host ec2-*
+        StrictHostKeyChecking no
+    #+END_SRC
+    
+    You can use the Terminate button in this buffer just like the
+    Spawn Host button to, you guessed it, terminate the host.
+
+*** Submitting Patch Builds
+    
+   evergreen.el allows you to submit patch builds via the command =M-x
+   evergreen-patch <RET>= when visiting any file in the repository you
+   wanna patch against.
    
    You will then be prompted for all required information to run a
    patch build. All information that requires knowledge of the
-   =evergreen.yml= or information Evergreen has will be presented as a
-   fuzzy searchable completion list. If you have [[https://github.com/emacs-helm/helm][helm]], [[https://github.com/abo-abo/swiper][ivy]], or
-   =ido= completion turned on it will use those packages.
+   =evergreen.yml= or information Evergreen provides via the
+   =evergreen list= command will be presented as a fuzzy searchable
+   completion list. If you have [[https://github.com/emacs-helm/helm][helm]], [[https://github.com/abo-abo/swiper][ivy]], or =ido= completion turned
+   on it will use those packages.
+   
+   See [[Configuration]] below for information about available options and
+   avoiding unnecessary prompts.
    
 *** Configuration
     
@@ -58,6 +110,11 @@
     discover available options for your installed version is always
     via =M-x customize-group <RET> evergreen <RET>=.
     
+**** evergreen-spawn-key-name
+     
+     The key pair name to use when spawning a host. Will be prompted
+     for when this is not set.
+  
 **** evergreen-projects
      
      List of evergreen projects used for completion in evergreen.el
@@ -138,6 +195,7 @@
     
     #+BEGIN_SRC emacs-lisp
     (setq 
+      evergreen-spawn-key-name "mykeypair"
       evergreen-generate-description t
       evergreen-finalize-when-patching t
       evergreen-browse-when-patching t
@@ -152,15 +210,6 @@
     (setq evergreen-projects '("mongodb-mongo-master" "toolchain-builder" "mongodb-mongo-v3.6" "mongodb-mongo-v4.0")
           evergreen-default-project "mongodb-mongo-master")
     #+END_SRC
-
-** Future Plans
-   
-   I have a few more features I want to add to this but I'm prevented
-   by bugs in the Evergreen CLI.
-   
-   - Spawn host creation with fuzzy searchable list of available distros. [[https://jira.mongodb.org/browse/EVG-6101][EVG-6101]] 
-   - Spawn host integration with [[https://www.emacswiki.org/emacs/TrampMode][TRAMP mode]]. [[https://jira.mongodb.org/browse/EVG-6102][EVG-6102]] 
-   - Spawn host management UI inside Emacs, something like =magit-log= or =list-processes=.
 
 ** License
 
