@@ -462,6 +462,81 @@ kind here because when EVG-6119 is done we can just use JSON."
      (split-string
       (evergreen--command-to-string "evergreen host list --mine") "\n")))))
 
+(defun evergreen--refresh-spawn-host-list ()
+  "Refresh the `tabulated-list-entries` for the Evergreen Spawn Host menu."
+  ;; I don't know why this uses setq but it's buffer local
+  ;; automagically. See the wacky tabulated list mode docs if you're
+  ;; really curious why this is so crazy.
+  ;;
+  ;; docs: https://www.gnu.org/software/emacs/manual/html_node/elisp/Tabulated-List-Mode.html
+  (setq
+   tabulated-list-entries
+   (mapcar 
+    #'(lambda (host)
+        (list
+         ;; This is used to remember cursor
+         ;; position and uniquely identify
+         ;; entries
+         (slot-value host 'id) 
+         ;; This vector actually gets
+         ;; printed and must match column
+         ;; order
+         (vector
+          ;; You might be thinking to yourself "Mat, why all these
+          ;; commas?" and I think that's a great question.
+          ;;
+          ;; This is some super crazy lisp macro syntax, the backtick
+          ;; in from of this s-expression means that it's going to
+          ;; make a list of "forms" which is basically unevaluated
+          ;; code. The comma tells this backtick to actually evluate
+          ;; that s-expression at list build time and store that value
+          ;; as the actuall element. Otherwise we'd end up trying to
+          ;; call slot-value on host when host is undefined (since the
+          ;; lambda in this case is not a closure of this function
+          ;; confusingly.)
+          ;;
+          ;; As for the action bit / what this is actually doing, this
+          ;; is what makes the id in the spawn host list a button. See
+          ;; the `tabulated-list-entries` help page for more
+          ;; information but I ultimately found line number 2953 of
+          ;; package.el to be the most helpful reference for this.
+          `(
+            ,(slot-value host 'id)
+            action (lambda (x)
+                     (message "Connecting to spawn host: %s" ,(slot-value host 'hostname))
+                     (dired (format "/ssh:%s@%s:%s"
+                                    (if evergreen-spawn-default-dir
+                                        evergreen-spawn-default-dir
+                                      (format "~%s" ,(slot-value host 'ssh-user)))
+                                    ,(slot-value host 'hostname)
+                                    ,(slot-value host 'ssh-user)))))
+          (slot-value host 'status)
+          (slot-value host 'distro)
+          (slot-value host 'hostname)
+          (slot-value host 'ssh-user)
+          `(
+            "Terminate"
+            action (lambda (x)
+                     (evergreen-terminate-host ,(slot-value host 'id))))
+          )))
+    (evergreen-get-spawn-hosts)))
+  ;; This adds a fake entry which should almost always be sorted to
+  ;; the bottom (unless the user sorts by ID and even then it should
+  ;; still be).
+  ;;
+  ;; It's purpose to add a "Spawn Host" button to the menu.
+  (add-to-list
+   'tabulated-list-entries
+   (list
+    ;; Fake ID, basically gets thrown away
+    1000000
+    (vector
+     ;; Create our button as the first column (ID)
+     `("Spawn Host"
+       action (lambda (x) (call-interactively 'evergreen-spawn-host)))
+     ;; Status, Distro, Hostname, SSH User, Terminate columns should be empty
+     "" "" "" "" ""))))
+
 (define-derived-mode evergreen-spawn-host-menu-mode tabulated-list-mode "Spawn Host Menu"
   "Major mode for interacting with Evergreen Spawn Hosts."
   (setq tabulated-list-format [
