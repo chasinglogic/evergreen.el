@@ -418,6 +418,39 @@ used as a userdata script for the host."
     :documentation "User for ssh'ing into the spawn host"))
   "An Evergreen Spawn Host")
 
+(defun evergreen--parse-spawn-host-line (line)
+  "Parse LINE of output from host list into an evergreen-spawn-host.
+
+Example output line:
+ID: i-0d03609daa1c39784; Distro: amazon1-2018-build; Status: running; Host name: ec2-3-84-84-12.compute-1.amazonaws.com; User: ec2-user 
+
+This is awful and hacky but I'm too lazy to do real parsing of any
+kind here because when EVG-6119 is done we can just use JSON."
+  (unless (string-equal line "")
+    (let* ((fields-and-values (split-string line ";"))
+           (values
+            (mapcar
+             #'(lambda (fv)
+                 ;; Remove the preceding whitespace
+                 (string-trim-left 
+                  ;; Get the actual string out of it instead of a list
+                  (car 
+                   ;; Drop the field name
+                   (cdr
+                    ;; Split on : because some fields are empty and so are
+                    ;; space only meaning the cdr would return the field
+                    ;; name as the value on incorrectly.
+                    (split-string fv ":")))))
+             fields-and-values)))
+      ;; If you're reading this I hope you're not happy about it because
+      ;; I'm not either.
+      (evergreen-spawn-host-obj
+       :id (nth 0 values)
+       :distro (nth 1 values)
+       :status (nth 2 values)
+       :hostname (nth 3 values)
+       :ssh-user (nth 4 values)))))
+
 (provide 'evergreen)
 
 ;;; evergreen.el ends here

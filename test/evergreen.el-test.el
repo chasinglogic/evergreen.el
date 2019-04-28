@@ -122,5 +122,25 @@
                "--variants=variants")))
     0)))
 
+(ert-deftest evergreen-parse-spawn-host-line-parses ()
+  "Should return a correct evergreen-spawn-host class."
+  (let (
+        (fixture
+         (evergreen-spawn-host
+          :id "i-0d03609daa1c39784"
+          :distro "amazon1-2018-build"
+          :status "running"
+          :hostname "ec2-3-84-84-12.compute-1.amazonaws.com"
+          :ssh-user "ec2-user"))
+        (result
+         (evergreen--parse-spawn-host-line
+          "ID: i-0d03609daa1c39784; Distro: amazon1-2018-build; Status: running; Host name: ec2-3-84-84-12.compute-1.amazonaws.com; User: ec2-user")))
+
+    (should (string-equal (slot-value fixture 'id) (slot-value result 'id)))
+    (should (string-equal (slot-value fixture 'distro) (slot-value result 'distro)))
+    (should (string-equal (slot-value fixture 'status) (slot-value result 'status)))
+    (should (string-equal (slot-value fixture 'hostname) (slot-value result 'hostname)))
+    (should (string-equal (slot-value fixture 'ssh-user) (slot-value result 'ssh-user)))))
+
 (provide 'evergreen.el-test)
 ;;; evergreen.el-test.el ends here
