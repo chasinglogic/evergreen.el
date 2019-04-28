@@ -190,6 +190,15 @@ Accepted keys are:
     (format "evergreen list --project %s --%s" project what))
    "\n"))
 
+(defun evergreen-list-thing (thing)
+  "Return a list of THING that does not require a project.
+
+If THING requires a project use `evergreen-list-for-project` instead."
+  (split-string
+   (evergreen--command-to-string
+    (format "evergreen list --%s" thing))
+   "\n"))
+
 ;;;###autoload
 (defun evergreen-update-cli ()
   "Update the Evergreen CLI via it's self update mechanism."
