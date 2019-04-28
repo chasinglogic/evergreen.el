@@ -31,6 +31,7 @@
 
 (require 'subr-x)
 (require 'vc-git)
+(require 'eieio)
 
 (defun evergreen--command-to-string (command)
   "Run COMMAND removing evergreen's self update message if necessary."
@@ -380,6 +381,30 @@ used as a userdata script for the host."
   (shell-command
    (format "evergreen host terminate --host=%s &" host-id)
    evergreen-command-output-buffer))
+
+(defclass evergreen-spawn-host-obj ()
+  ((id
+    :initarg :id
+    :custom string
+    :type string
+    :documentation "EC2 Instance ID")
+   (distro
+    :initarg :distro
+    :type string
+    :documentation "Spawn Host's Evergreen Distro")
+   (status
+    :initarg :status
+    :type string
+    :documentation "Spawn host ready status")
+   (hostname
+    :initarg :hostname
+    :type string
+    :documentation "Spawn host hostname")
+   (ssh-user
+    :initarg :ssh-user
+    :type string
+    :documentation "User for ssh'ing into the spawn host"))
+  "An Evergreen Spawn Host")
 
 (provide 'evergreen)
 
