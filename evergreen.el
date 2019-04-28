@@ -30,6 +30,7 @@
 ;;; Code:
 
 (require 'subr-x)
+(require 'vc-git)
 
 (defun evergreen--command-to-string (command)
   "Run COMMAND removing evergreen's self update message if necessary."
@@ -210,18 +211,10 @@ not suitable for use in later commands."
    'evergreen--trim-extra-output
    (evergreen-list-for-project project what)))
 
-(defun evergreen--branch-name ()
-  "Return the git branch name for buffer."
-  (string-trim-right
-   (replace-regexp-in-string
-    (regexp-quote "refs/heads/")
-    ""
-    (shell-command-to-string "git symbolic-ref HEAD"))))
-
 (defun evergreen--generate-description ()
   "Generate patch description using git information."
   (let* (
-         (branch-name (evergreen--branch-name))
+         (branch-name (car (vc-git-branches)))
          (commit-msg (string-trim-right
                       (shell-command-to-string "git log -n 1 --format='%s'"))))
     (concat branch-name ": " commit-msg)))
