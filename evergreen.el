@@ -362,6 +362,25 @@ used as a userdata script for the host."
       (buffer-substring (region-beginning) (region-end)))))
   (evergreen-spawn-host distro key-name script))
 
+;;;###autoload
+(defun evergreen-terminate-host (host-id)
+  "Terminate the spawn host with HOST-ID."
+  (interactive
+   (list
+    (car
+     (split-string
+      (completing-read "Host: "
+                       (mapcar
+                        #'(lambda (host)
+                            (format "%s %s %s"
+                                    (slot-value host 'id)
+                                    (slot-value host 'distro)
+                                    (slot-value host 'hostname)))
+                        (evergreen-get-spawn-hosts)))))))
+  (shell-command
+   (format "evergreen host terminate --host=%s &" host-id)
+   evergreen-command-output-buffer))
+
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
