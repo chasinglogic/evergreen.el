@@ -344,6 +344,24 @@ used as a userdata script for the host."
   (when script
     (delete-file "userdata.sh")))
 
+;;;###autoload
+(defun evergreen-spawn-host-with-userdata (distro key-name &optional script)
+  "Create a Spawn Host of DISTRO using the current region as a userdata script.
+
+If KEY-NAME is the name in Evergreen or value of the public key to use
+when creating the host..
+If SCRIPT is non-nil it's content is written to a temporary file then
+used as a userdata script for the host."
+  (interactive
+   (list
+    (completing-read "Distro: " (cdr (evergreen-list-thing "spawnable")))
+    (if evergreen-spawn-key-name
+        evergreen-spawn-key-name
+      (read-string "Key Name: "))
+    (when (region-active-p)
+      (buffer-substring (region-beginning) (region-end)))))
+  (evergreen-spawn-host distro key-name script))
+
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
