@@ -451,6 +451,17 @@ kind here because when EVG-6119 is done we can just use JSON."
        :hostname (nth 3 values)
        :ssh-user (nth 4 values)))))
 
+(defun evergreen-get-spawn-hosts ()
+  "Return a list of Evergreen spawn hosts."
+  (remove
+   nil
+   (mapcar
+    #'evergreen--parse-spawn-host-line
+    ;; Drop the first line of output since we don't need it. (it's not a host)
+    (cdr
+     (split-string
+      (evergreen--command-to-string "evergreen host list --mine") "\n")))))
+
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
