@@ -123,6 +123,18 @@ This option is ignored if evergreen-browse-when-patching is non-nil."
   :type 'boolean
   :group 'evergreen)
 
+(defcustom evergreen-spawn-key-name nil
+  "The key pair name (as shown in Evergreen) to use when spawning a host."
+  :type 'string
+  :group 'evergreen)
+
+(defcustom evergreen-spawn-default-dir nil
+  "If non-nil open this directory on spawn hosts by default.
+
+If nil the SSH user's home directory will be opened."
+  :type 'string
+  :group 'evergreen)
+
 (defun evergreen-command (command &rest args)
   "Run the evergreen command COMMAND with ARGS."
   (let ((real-args (remove nil (append (list command) args))))
