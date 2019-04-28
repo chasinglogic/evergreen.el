@@ -315,6 +315,35 @@ If ALIAS is nil VARIANTS and TASKS must be provided instead."
           (evergreen-patch--get-user-args)
           (list t))))
 
+;;;###autoload
+(defun evergreen-spawn-host (distro key-name &optional script)
+  "Create an Evergreen Spawn Host of DISTRO.
+
+If KEY-NAME is the name in Evergreen or value of the public key to use
+when creating the host..
+If SCRIPT is non-nil it's content is written to a temporary file then
+used as a userdata script for the host."
+  (interactive
+   (list
+    (completing-read "Distro: " (cdr (evergreen-list-thing "spawnable")))
+    (if evergreen-spawn-key-name
+        evergreen-spawn-key-name
+      (read-string "Key Name: "))))
+  (when script
+    (with-temp-file "userdata.sh"
+      (insert script)))
+  (apply 'evergreen-command
+         (remove
+          nil
+          (list
+           "host"
+           "create"
+           (format "--key=%s" key-name)
+           (format "--distro=%s" distro)
+           (when script "--script=userdata.sh"))))
+  (when script
+    (delete-file "userdata.sh")))
+
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
