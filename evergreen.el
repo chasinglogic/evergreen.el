@@ -462,6 +462,20 @@ kind here because when EVG-6119 is done we can just use JSON."
      (split-string
       (evergreen--command-to-string "evergreen host list --mine") "\n")))))
 
+(define-derived-mode evergreen-spawn-host-menu-mode tabulated-list-mode "Spawn Host Menu"
+  "Major mode for interacting with Evergreen Spawn Hosts."
+  (setq tabulated-list-format [
+                               ;; ColumnName Width CanBeSorted
+                               ("ID"        20 t)
+                               ("Status"    10 t)
+                               ("Distro"    20 t)
+                               ("Hostname"  40 t)
+                               ("SSH User"  10 t)
+                               ("Terminate" 9  t)])
+  ;; Default column to sort by, more whack setq usage.
+  (setq tabulated-list-sort-key (cons "ID" nil))
+  ;; buffer revert updates list of spawn hosts
+  (add-hook 'tabulated-list-revert-hook 'evergreen--refresh-spawn-host-list nil t))
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
