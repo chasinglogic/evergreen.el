@@ -551,6 +551,18 @@ kind here because when EVG-6119 is done we can just use JSON."
   (setq tabulated-list-sort-key (cons "ID" nil))
   ;; buffer revert updates list of spawn hosts
   (add-hook 'tabulated-list-revert-hook 'evergreen--refresh-spawn-host-list nil t))
+
+(defun evergreen-list-spawn-hosts ()
+  "List current Evergreen spawn hosts."
+  (interactive)
+  (let ((buffer (get-buffer-create "*Evergreen Spawn Hosts*")))
+    (with-current-buffer buffer
+      (evergreen-spawn-host-menu-mode)
+      (evergreen--refresh-spawn-host-list)
+      (tabulated-list-init-header)
+      (tabulated-list-print))
+    (display-buffer buffer)))
+
 (provide 'evergreen)
 
 ;;; evergreen.el ends here
