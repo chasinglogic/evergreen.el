@@ -552,6 +552,7 @@ kind here because when EVG-6119 is done we can just use JSON."
   ;; buffer revert updates list of spawn hosts
   (add-hook 'tabulated-list-revert-hook 'evergreen--refresh-spawn-host-list nil t))
 
+;;;###autoload
 (defun evergreen-list-spawn-hosts ()
   "List current Evergreen spawn hosts."
   (interactive)
