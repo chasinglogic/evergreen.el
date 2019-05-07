@@ -233,6 +233,7 @@ not suitable for use in later commands."
    'evergreen--trim-extra-output
    (evergreen-list-for-project project what)))
 
+;;;###autoload
 (defun evergreen--generate-description ()
   "Generate patch description using git information."
   (let* (
