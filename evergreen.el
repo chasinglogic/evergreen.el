@@ -33,18 +33,6 @@
 (require 'vc-git)
 (require 'eieio)
 
-(defun evergreen--command-to-string (command)
-  "Run COMMAND removing evergreen's self update message if necessary."
-  (let ((output (shell-command-to-string command)))
-    (if (string-match-p (regexp-quote "^A new version is available.*") output)
-        (progn
-          (message "Evergreen CLI is ready for update. Run evergreen-update-cli to update it.")
-          (mapconcat
-           'identity
-           (cdr (split-string output "\n"))
-           "\n"))
-      output)))
-
 (defun evergreen-list-projects ()
   "Return a list of available evergreen projects."
   (cdr ;; removes the project count
@@ -135,66 +123,6 @@ If nil the SSH user's home directory will be opened."
   :type 'string
   :group 'evergreen)
 
-(defun evergreen-command (command &rest args)
-  "Run the evergreen command COMMAND with ARGS."
-  (let ((real-args (remove nil (append (list command) args))))
-    (pop-to-buffer
-     (apply 'make-comint-in-buffer
-            (append
-             (list
-              (format "evergreen %s" command)
-              evergreen-command-output-buffer
-              evergreen-binary-path
-              nil)
-              real-args)))
-    (message "Running evergreen with: %s"
-             (append (list evergreen-binary-path) real-args))
-     (with-current-buffer evergreen-command-output-buffer
-       (goto-char (point-max)))))
-
-(defun evergreen-patch-flagset (&rest kwargs)
-  "Build an evergreen patch flagset using the property list KWARGS.
-
-Accepted keys are:
-:project   Project to run patch against
-:alias	   Patch alias (set by project admin)
-:variants  Variants to run on
-:tasks     List of tasks to run
-:description	description for the patch
-:no-confirm				skip confirmation text
-:large	   Enable submitting larger patches (>16MB)
-:browse				open patch url in browser
-:verbose				show patch summary
-:finalize			schedule tasks immediately
-:committed-only			diff with HEAD, ignoring working tree changes"
-  (when (and (plist-get kwargs :variants)
-             (not (listp (plist-get kwargs :variants))))
-    (error ":variants must be a list"))
-  (when (and (plist-get kwargs :tasks)
-             (not (listp (plist-get kwargs :tasks))))
-    (error ":tasks must be a list"))
-  (remove
-   nil
-   (apply
-    #'append
-    (list
-     (list (format "--project=%s" (plist-get kwargs :project)))
-     (if (plist-get kwargs :alias)
-         (list (format "--alias=%s" (plist-get kwargs :alias)))
-       (list
-        (format "--variants=%s"
-                (string-join (plist-get kwargs :variants) ","))
-        (format "--tasks=%s"
-                (string-join (plist-get kwargs :tasks) ","))))
-     (list
-      (when (plist-get kwargs :description)
-        (format "--description=%s" (plist-get kwargs :description)))
-      (when (plist-get kwargs :no-confirm) "--yes")
-      (when (plist-get kwargs :large) "--large")
-      (when (plist-get kwargs :browse) "--browse")
-      (when (plist-get kwargs :verbose) "--verbose")
-      (when (plist-get kwargs :finalize) "--finalize")
-      (when (plist-get kwargs :committed-only) "--committed-only"))))))
 
 (defun evergreen-list-for-project (project what)
   "Return a list of WHAT for PROJECT."
@@ -330,7 +258,7 @@ If ALIAS is nil VARIANTS and TASKS must be provided instead."
           (list t))))
 
 ;;;###autoload
-(defun evergreen-spawn-host (distro key-name &optional script)
+(defun evergreen-create-spawn-host (distro key-name &optional script)
   "Create an Evergreen Spawn Host of DISTRO.
 
 If KEY-NAME is the name in Evergreen or value of the public key to use
@@ -359,7 +287,7 @@ used as a userdata script for the host."
     (delete-file "userdata.sh")))
 
 ;;;###autoload
-(defun evergreen-spawn-host-with-userdata (distro key-name &optional script)
+(defun evergreen-create-spawn-host-with-userdata (distro key-name &optional script)
   "Create a Spawn Host of DISTRO using the current region as a userdata script.
 
 If KEY-NAME is the name in Evergreen or value of the public key to use
@@ -394,164 +322,6 @@ used as a userdata script for the host."
   (shell-command
    (format "evergreen host terminate --host=%s &" host-id)
    evergreen-command-output-buffer))
-
-(defclass evergreen-spawn-host-obj ()
-  ((id
-    :initarg :id
-    :custom string
-    :type string
-    :documentation "EC2 Instance ID")
-   (distro
-    :initarg :distro
-    :type string
-    :documentation "Spawn Host's Evergreen Distro")
-   (status
-    :initarg :status
-    :type string
-    :documentation "Spawn host ready status")
-   (hostname
-    :initarg :hostname
-    :type string
-    :documentation "Spawn host hostname")
-   (ssh-user
-    :initarg :ssh-user
-    :type string
-    :documentation "User for ssh'ing into the spawn host"))
-  "An Evergreen Spawn Host")
-
-(defun evergreen--parse-spawn-host-line (line)
-  "Parse LINE of output from host list into an evergreen-spawn-host.
-
-Example output line:
-ID: i-0d03609daa1c39784; Distro: amazon1-2018-build; Status: running; Host name: ec2-3-84-84-12.compute-1.amazonaws.com; User: ec2-user 
-
-This is awful and hacky but I'm too lazy to do real parsing of any
-kind here because when EVG-6119 is done we can just use JSON."
-  (unless (string-equal line "")
-    (let* ((fields-and-values (split-string line ";"))
-           (values
-            (mapcar
-             #'(lambda (fv)
-                 ;; Remove the preceding whitespace
-                 (string-trim-left 
-                  ;; Get the actual string out of it instead of a list
-                  (car 
-                   ;; Drop the field name
-                   (cdr
-                    ;; Split on : because some fields are empty and so are
-                    ;; space only meaning the cdr would return the field
-                    ;; name as the value on incorrectly.
-                    (split-string fv ":")))))
-             fields-and-values)))
-      ;; If you're reading this I hope you're not happy about it because
-      ;; I'm not either.
-      (evergreen-spawn-host-obj
-       :id (nth 0 values)
-       :distro (nth 1 values)
-       :status (nth 2 values)
-       :hostname (nth 3 values)
-       :ssh-user (nth 4 values)))))
-
-(defun evergreen-get-spawn-hosts ()
-  "Return a list of Evergreen spawn hosts."
-  (remove
-   nil
-   (mapcar
-    #'evergreen--parse-spawn-host-line
-    ;; Drop the first line of output since we don't need it. (it's not a host)
-    (cdr
-     (split-string
-      (evergreen--command-to-string "evergreen host list --mine") "\n")))))
-
-(defun evergreen--refresh-spawn-host-list ()
-  "Refresh the `tabulated-list-entries` for the Evergreen Spawn Host menu."
-  ;; I don't know why this uses setq but it's buffer local
-  ;; automagically. See the wacky tabulated list mode docs if you're
-  ;; really curious why this is so crazy.
-  ;;
-  ;; docs: https://www.gnu.org/software/emacs/manual/html_node/elisp/Tabulated-List-Mode.html
-  (setq
-   tabulated-list-entries
-   (mapcar 
-    #'(lambda (host)
-        (list
-         ;; This is used to remember cursor
-         ;; position and uniquely identify
-         ;; entries
-         (slot-value host 'id) 
-         ;; This vector actually gets
-         ;; printed and must match column
-         ;; order
-         (vector
-          ;; You might be thinking to yourself "Mat, why all these
-          ;; commas?" and I think that's a great question.
-          ;;
-          ;; This is some super crazy lisp macro syntax, the backtick
-          ;; in from of this s-expression means that it's going to
-          ;; make a list of "forms" which is basically unevaluated
-          ;; code. The comma tells this backtick to actually evluate
-          ;; that s-expression at list build time and store that value
-          ;; as the actuall element. Otherwise we'd end up trying to
-          ;; call slot-value on host when host is undefined (since the
-          ;; lambda in this case is not a closure of this function
-          ;; confusingly.)
-          ;;
-          ;; As for the action bit / what this is actually doing, this
-          ;; is what makes the id in the spawn host list a button. See
-          ;; the `tabulated-list-entries` help page for more
-          ;; information but I ultimately found line number 2953 of
-          ;; package.el to be the most helpful reference for this.
-          `(
-            ,(slot-value host 'id)
-            action (lambda (x)
-                     (message "Connecting to spawn host: %s" ,(slot-value host 'hostname))
-                     (dired (format "/ssh:%s@%s:%s"
-                                    (if evergreen-spawn-default-dir
-                                        evergreen-spawn-default-dir
-                                      (format "~%s" ,(slot-value host 'ssh-user)))
-                                    ,(slot-value host 'hostname)
-                                    ,(slot-value host 'ssh-user)))))
-          (slot-value host 'status)
-          (slot-value host 'distro)
-          (slot-value host 'hostname)
-          (slot-value host 'ssh-user)
-          `(
-            "Terminate"
-            action (lambda (x)
-                     (evergreen-terminate-host ,(slot-value host 'id))))
-          )))
-    (evergreen-get-spawn-hosts)))
-  ;; This adds a fake entry which should almost always be sorted to
-  ;; the bottom (unless the user sorts by ID and even then it should
-  ;; still be).
-  ;;
-  ;; It's purpose to add a "Spawn Host" button to the menu.
-  (add-to-list
-   'tabulated-list-entries
-   (list
-    ;; Fake ID, basically gets thrown away
-    1000000
-    (vector
-     ;; Create our button as the first column (ID)
-     `("Spawn Host"
-       action (lambda (x) (call-interactively 'evergreen-spawn-host)))
-     ;; Status, Distro, Hostname, SSH User, Terminate columns should be empty
-     "" "" "" "" ""))))
-
-(define-derived-mode evergreen-spawn-host-menu-mode tabulated-list-mode "Spawn Host Menu"
-  "Major mode for interacting with Evergreen Spawn Hosts."
-  (setq tabulated-list-format [
-                               ;; ColumnName Width CanBeSorted
-                               ("ID"        20 t)
-                               ("Status"    10 t)
-                               ("Distro"    20 t)
-                               ("Hostname"  40 t)
-                               ("SSH User"  10 t)
-                               ("Terminate" 9  t)])
-  ;; Default column to sort by, more whack setq usage.
-  (setq tabulated-list-sort-key (cons "ID" nil))
-  ;; buffer revert updates list of spawn hosts
-  (add-hook 'tabulated-list-revert-hook 'evergreen--refresh-spawn-host-list nil t))
 
 ;;;###autoload
 (defun evergreen-list-spawn-hosts ()
